@@ -660,7 +660,7 @@ func decodeBinaryCondition(r *io.BinReader, maxDepth int) WitnessCondition {
 // condFromStackItem decodes and returns a condition from the given
 // [stackitem.Item] (as produced by [WitnessCondition.ToStackItem]).
 func condFromStackItem(item stackitem.Item, maxDepth int) (WitnessCondition, error) {
-	if maxDepth < 0 {
+	if maxDepth <= 0 {
 		return nil, errors.New("too many nesting levels")
 	}
 	arr, ok := item.Value().([]stackitem.Item)
@@ -679,7 +679,7 @@ func condFromStackItem(item stackitem.Item, maxDepth int) (WitnessCondition, err
 	if t == WitnessCalledByEntry {
 		wantLen = 1
 	}
-	if len(arr) < wantLen {
+	if len(arr) != wantLen {
 		return nil, errors.New("wrong number of elements")
 	}
 	switch t {
@@ -703,7 +703,7 @@ func condFromStackItem(item stackitem.Item, maxDepth int) (WitnessCondition, err
 		if len(items) == 0 {
 			return nil, errors.New("empty array of conditions")
 		}
-		if len(items) >= maxSubitems {
+		if len(items) > maxSubitems {
 			return nil, errors.New("too many elements")
 		}
 		conds := make([]WitnessCondition, len(items))
@@ -713,7 +713,7 @@ func condFromStackItem(item stackitem.Item, maxDepth int) (WitnessCondition, err
 				return nil, fmt.Errorf("element %d: %w", i, err)
 			}
 		}
-		if t == WitnessOr {
+		if t == WitnessAnd {
 			return new(ConditionAnd(conds)), nil
 		}
 		return new(ConditionOr(conds)), nil
