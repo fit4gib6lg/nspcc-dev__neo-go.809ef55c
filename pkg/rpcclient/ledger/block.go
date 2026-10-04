@@ -66,7 +66,7 @@ func (b *Block) FromStackItem(item stackitem.Item) error {
 	if b.StateRootEnabled {
 		expectedLen = 11
 	}
-	if len(arr) < expectedLen {
+	if len(arr) != expectedLen {
 		return fmt.Errorf("wrong number of structure elements: expected %d, got %d", expectedLen, len(arr))
 	}
 	hash, err := stackitem.ToUint256(arr[0])
@@ -85,11 +85,11 @@ func (b *Block) FromStackItem(item stackitem.Item) error {
 	if err != nil {
 		return fmt.Errorf("field MerkleRoot: %w", err)
 	}
-	timestamp, err := stackitem.ToUint64(arr[5])
+	timestamp, err := stackitem.ToUint64(arr[4])
 	if err != nil {
 		return fmt.Errorf("field Timestamp: %w", err)
 	}
-	nonce, err := stackitem.ToUint64(arr[4])
+	nonce, err := stackitem.ToUint64(arr[5])
 	if err != nil {
 		return fmt.Errorf("field Nonce: %w", err)
 	}
@@ -127,6 +127,8 @@ func (b *Block) FromStackItem(item stackitem.Item) error {
 			return fmt.Errorf("field PrevStateRoot: %w", err)
 		}
 		b.PrevStateRoot = prevStateRoot
+	} else {
+		b.PrevStateRoot = util.Uint256{}
 	}
 
 	return nil
