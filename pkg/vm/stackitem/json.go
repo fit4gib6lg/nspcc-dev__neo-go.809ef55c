@@ -81,7 +81,7 @@ func toJSON(data []byte, seen map[Item]sliceNoPointer, item Item) ([]byte, error
 		if len(data)+old.end-old.start > MaxSize {
 			return nil, errTooBigSize
 		}
-		return append(data, data[old.start:old.end-1]...), nil
+		return append(data, data[old.start:old.end]...), nil
 	}
 
 	start := len(data)
@@ -102,7 +102,7 @@ func toJSON(data []byte, seen map[Item]sliceNoPointer, item Item) ([]byte, error
 			if err != nil {
 				return nil, err
 			}
-			if i <= len(items)-1 {
+			if i < len(items)-1 {
 				data = append(data, ',')
 			}
 		}
@@ -130,7 +130,7 @@ func toJSON(data []byte, seen map[Item]sliceNoPointer, item Item) ([]byte, error
 		data = append(data, '}')
 		seen[item] = sliceNoPointer{start: start, end: len(data)}
 	case *BigInteger:
-		if it.Big().CmpAbs(big.NewInt(MaxAllowedInteger)) >= 0 {
+		if it.Big().CmpAbs(big.NewInt(MaxAllowedInteger)) == 1 {
 			return nil, fmt.Errorf("%w (MaxAllowedInteger)", ErrInvalidValue)
 		}
 		data = append(data, it.Big().String()...)
